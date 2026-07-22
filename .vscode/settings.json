@@ -1,0 +1,18 @@
+{
+    "sqltools.connections": [
+        {
+            "mysqlOptions": {
+                "authProtocol": "default",
+                "enableSsl": "Disabled"
+            },
+            "ssh": "Disabled",
+            "previewLimit": 50,
+            "server": "192.168.2.34",
+            "port": 3001,
+            "driver": "MySQL",
+            "name": "DB_OSRS_DWH",
+            "username": "osrs_dwh",
+            "database": "osrs_dwh"
+        }
+    ]
+}
