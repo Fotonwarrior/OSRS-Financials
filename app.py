@@ -3,6 +3,8 @@ import pandas as pd
 import datetime
 import numpy as np 
 from SQL_connector import Sql_Handler
+from apscheduler.schedulers.background import BackgroundScheduler
+import time
 
 class ProfitFinderSession():
     "Object that handles communication with the OSRS prices wiki API and returns data in dataframe form"
@@ -11,7 +13,13 @@ class ProfitFinderSession():
         self.session = requests.Session()
         self.session.headers.update( {"User-Agent":"Appname: OSRS Profitfinder - Discord:remco995"})
         self.sql_handler = Sql_Handler()
-        
+
+    def full_run(self):
+        print(f'{datetime.datetime.now()}:job started')
+        self.fetch_mapping()
+        self.fetch_latest()
+        print(f'{datetime.datetime.now()}:job done!')
+
     def _fetch_data(self, suffix: str, params: dict = {})-> dict:
         "internal function that compiles the get request based on parameters"
         url = self.url + suffix
@@ -30,7 +38,7 @@ class ProfitFinderSession():
         response= self._fetch_data("/mapping")
         df= pd.DataFrame(response)
         df['ingested_at'] = datetime.datetime.now()
-        self.sql_handler.save_dataobject(dataframe=df, tablename="mapping")
+        self.sql_handler.save_dataobject(dataframe=df, tablename="mapping", strategy="replace")
 
 
     def fetch_timeseries(self,itemId, timestep)-> pd.DataFrame:
@@ -57,10 +65,17 @@ class ProfitFinderSession():
         df["lowTime"] = df.lowTime.apply(lambda x : self._fix_datetime(x))
         df["highTime"] = df.highTime.apply(lambda x : self._fix_datetime(x))
         df['ingested_at'] = datetime.datetime.now()
-        self.sql_handler.save_dataobject(dataframe=df, tablename="pricelog")
+        self.sql_handler.save_dataobject(dataframe=df, tablename="pricelog", strategy="append")
 
 
 
     
 s= ProfitFinderSession()
-s.fetch_latest()
+s.full_run()                      # meteen één keer
+
+sched = BackgroundScheduler(timezone="UTC")
+sched.add_job(s.full_run, "interval", minutes=5, max_instances=1, coalesce=True)
+sched.start()     
+
+while True:
+    time.sleep(1)
