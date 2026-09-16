@@ -1,0 +1,9 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: osrs_profitfinder
+    restart: unless-stopped
+    environment:
+      OSRS_DWH_URL: ${OSRS_DWH_URL}
