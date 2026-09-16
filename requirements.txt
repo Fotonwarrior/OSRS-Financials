@@ -1,4 +1,4 @@
-pymysql
+psycopg2-binary
 sqlalchemy
 dotenv
 pandas

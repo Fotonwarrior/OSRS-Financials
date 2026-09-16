@@ -65,6 +65,7 @@ class ProfitFinderSession():
         df["lowTime"] = df.lowTime.apply(lambda x : self._fix_datetime(x))
         df["highTime"] = df.highTime.apply(lambda x : self._fix_datetime(x))
         df['ingested_at'] = datetime.datetime.now()
+        df = df.rename(columns={"highTime": "hightime", "lowTime": "lowtime"})
         self.sql_handler.save_dataobject(dataframe=df, tablename="pricelog", strategy="append")
 
 
