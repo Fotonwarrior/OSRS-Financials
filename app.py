@@ -18,6 +18,7 @@ class ProfitFinderSession():
         print(f'{datetime.datetime.now()}:job started')
         self.fetch_mapping()
         self.fetch_latest()
+        self.fetch_volume()
         print(f'{datetime.datetime.now()}:job done!')
 
     def _fetch_data(self, suffix: str, params: dict = {})-> dict:
@@ -68,9 +69,38 @@ class ProfitFinderSession():
         df = df.rename(columns={"highTime": "hightime", "lowTime": "lowtime"})
         self.sql_handler.save_dataobject(dataframe=df, tablename="pricelog", strategy="append")
 
+    def fetch_volume(self, timestep="5m")-> pd.DataFrame:
+        "fetches average price + trade volume for the given window (5m/1h/6h/24h)"
+        valid_timesteps = ["5m", "1h", "6h", "24h"]
+        if timestep not in valid_timesteps:
+            return
+        
+        response = self._fetch_data(f"/{timestep}")
+        snapshot_time = self._fix_datetime(response["timestamp"])
+        data = response["data"]
+        flat_array = []
+
+        for key in data.keys():
+            record = {}
+            record['id'] = key
+            record.update(data[key])
+            flat_array.append(record)
+
+        df = pd.DataFrame(flat_array)
+        df["snapshot_time"] = snapshot_time
+        df["ingested_at"] = datetime.datetime.now()
+        df = df.rename(columns={
+            "avgHighPrice": "avg_high_price",
+            "highPriceVolume": "high_price_volume",
+            "avgLowPrice": "avg_low_price",
+            "lowPriceVolume": "low_price_volume",
+        })
+        # items with no trades in the window come back as null; pandas turns
+        # those into NaN, which postgres refuses to cast into an int column
+        df = df.astype(object).where(pd.notnull(df), None)
+        self.sql_handler.save_dataobject(dataframe=df, tablename="volume", strategy="append")
 
 
-    
 s= ProfitFinderSession()
 s.full_run()                      # meteen één keer
 
