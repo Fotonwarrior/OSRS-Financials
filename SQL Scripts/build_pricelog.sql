@@ -4,9 +4,9 @@ CREATE EXTENSION IF NOT EXISTS timescaledb;
 DROP TABLE IF EXISTS pricelog;
 CREATE TABLE IF NOT EXISTS pricelog (
     id           INTEGER     NOT NULL,
-    high         INTEGER     NULL,
+    high         BIGINT      NULL,
     hightime     TIMESTAMP   NULL,
-    low          INTEGER     NULL,
+    low          BIGINT      NULL,
     lowtime      TIMESTAMP   NULL,
     ingested_at  TIMESTAMP   NOT NULL,
     PRIMARY KEY (id, ingested_at)

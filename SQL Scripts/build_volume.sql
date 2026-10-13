@@ -3,9 +3,9 @@ CREATE EXTENSION IF NOT EXISTS timescaledb;
 DROP TABLE IF EXISTS volume;
 CREATE TABLE IF NOT EXISTS volume (
     id                  INTEGER     NOT NULL,
-    avg_high_price      INTEGER     NULL,
+    avg_high_price      BIGINT      NULL,
     high_price_volume   BIGINT      NULL,
-    avg_low_price       INTEGER     NULL,
+    avg_low_price       BIGINT      NULL,
     low_price_volume    BIGINT      NULL,
     snapshot_time       TIMESTAMP   NOT NULL,
     ingested_at         TIMESTAMP   NOT NULL,
